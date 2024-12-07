@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 const int num_my_shell_builtins = 3;
 char my_shell_builtins[3][10] = {"exit", "echo", "type"};
@@ -9,7 +10,14 @@ int main() {
   char* cmd = NULL;
   char* dup_input = NULL;
   char* arg = NULL;
+  char* path = NULL;
+  char* path_token = NULL;
+  char* dup_path = NULL;
   int i;
+  int flag;
+  char exec_path[256];
+
+  path =  getenv("PATH");
 
   //REPL Loop
   while(1) {
@@ -36,17 +44,37 @@ int main() {
       continue;
     }
     else if(strncmp(input, "type",strlen("type")) == 0) {
+      flag = 0;
+
       arg = strtok(NULL, " ");
       for(i = 0; i < num_my_shell_builtins; i++) {
         if(strncmp(arg, my_shell_builtins[i], strlen(my_shell_builtins[i])) == 0) {
           printf("%s is a shell builtin\n", arg);
+          flag = 1;
           break;
         }
       }
-      if(i == num_my_shell_builtins)
+      if(!flag) {
+        dup_path = strdup(path);
+        path_token = strtok(dup_path, ":");
+        while(path_token) {
+          sprintf(exec_path, "%s/%s", path_token, arg);
+          
+          if(access(exec_path, X_OK) == 0) {
+            flag = 1;
+            printf("%s is %s\n", arg, exec_path);
+            break;
+          }
+          path_token = strtok(NULL, ":");
+        }
+      }
+      if(!flag)
         printf("%s: not found\n", arg);
       continue;
     }
+
+    
+
     printf("%s: command not found\n", cmd);
   }
 
