@@ -3,7 +3,7 @@
 #include <string.h>
 
 int main() {
-  char* cmd = NULL;
+  //char* cmd = NULL;
 
   //REPL Loop
   while(1) {
@@ -17,9 +17,15 @@ int main() {
     //TODO: remove newline at end
     input[strlen(input) - 1] = '\0';
 
-    cmd = strtok(input, " ");
-    printf("%s: command not found\n", cmd);
+    //cmd = strtok(input, " ");
+
+    //exit 0
+    if(strncmp(input, "exit 0",strlen("exit 0")) == 0) {
+      exit(0);
+    }
+
+    printf("%s: command not found\n", input);
   }
-    
+
   return 0;
 }
