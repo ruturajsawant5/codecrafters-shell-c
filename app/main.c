@@ -2,8 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+const int num_my_shell_builtins = 3;
+char my_shell_builtins[3][10] = {"exit", "echo", "type"};
+
 int main() {
-  //char* cmd = NULL;
+  char* cmd = NULL;
+  char* dup_input = NULL;
+  char* arg = NULL;
+  int i;
 
   //REPL Loop
   while(1) {
@@ -17,7 +23,9 @@ int main() {
     //TODO: remove newline at end
     input[strlen(input) - 1] = '\0';
 
-    //cmd = strtok(input, " ");
+    //duplicate string
+    dup_input = strdup(input);
+    cmd = strtok(dup_input, " ");
 
     //exit 0
     if(strncmp(input, "exit 0",strlen("exit 0")) == 0) {
@@ -27,7 +35,19 @@ int main() {
       printf("%s\n", input + 5);
       continue;
     }
-    printf("%s: command not found\n", input);
+    else if(strncmp(input, "type",strlen("type")) == 0) {
+      arg = strtok(NULL, " ");
+      for(i = 0; i < num_my_shell_builtins; i++) {
+        if(strncmp(arg, my_shell_builtins[i], strlen(my_shell_builtins[i])) == 0) {
+          printf("%s is a shell builtin\n", arg);
+          break;
+        }
+      }
+      if(i == num_my_shell_builtins)
+        printf("%s: not found\n", arg);
+      continue;
+    }
+    printf("%s: command not found\n", cmd);
   }
 
   return 0;
