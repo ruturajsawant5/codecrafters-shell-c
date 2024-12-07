@@ -4,18 +4,22 @@
 
 int main() {
   char* cmd = NULL;
-  printf("$ ");
-  fflush(stdout);
 
-  // Wait for user input
-  char input[100];
-  fgets(input, 100, stdin);
+  //REPL Loop
+  while(1) {
+    printf("$ ");
+    fflush(stdout);
 
-  //TODO: remove newline at end
-  input[strlen(input) - 1] = '\0';
+    // Wait for user input
+    char input[100];
+    fgets(input, 100, stdin);
 
-  cmd = strtok(input, " ");
-  printf("%s: command not found\n", cmd);
-  
+    //TODO: remove newline at end
+    input[strlen(input) - 1] = '\0';
+
+    cmd = strtok(input, " ");
+    printf("%s: command not found\n", cmd);
+  }
+    
   return 0;
 }
