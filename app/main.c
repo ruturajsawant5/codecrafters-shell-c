@@ -55,6 +55,28 @@ int main() {
       continue;
     }
     else if (strncmp(input, "cd", strlen("cd")) == 0) {
+      getcwd(buffer, 255);
+      if(strncmp(arg, "../", strlen("../")) == 0) {
+        
+        char* last_slash = strrchr(buffer, "/");
+        if(last_slash) {
+          size_t length = last_slash - buffer;
+          char new_path[256];
+          strncpy(new_path, buffer, length);
+          new_path[length] = 0;
+          rc = chdir(new_path);
+          if(rc != 0)
+            printf("cd: %s: No such file or directory\n", new_path);
+        }
+      }
+      else if(strncmp(arg, "./", strlen("./")) == 0) {
+        char new_path[256];
+        sprintf(new_path, "%s/%s", buffer, arg+2);
+        rc = chdir(new_path);
+        if(rc != 0)
+          printf("cd: %s: No such file or directory\n", new_path);
+
+      }
       rc = chdir(arg);
       if(rc != 0)
         printf("cd: %s: No such file or directory\n", arg);
