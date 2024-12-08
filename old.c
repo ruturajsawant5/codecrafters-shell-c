@@ -110,18 +110,27 @@ int main() {
     fgets(input, 100, stdin);
 
     // remove newline at end
+    // input[strlen(input) - 1] = '\0';
     input[strcspn(input, "\n")] = 0;
 
     int nr = parse_cmd_and_args(input, cmd, tmpp);
+    // printf("CMD=%s\n",cmdy);
+    // for(int hh = 0; hh < nr; hh++)
+    //     printf("ARG%d=%s\n", hh, tmpp[hh]);
+
+    // duplicate string
+    // dup_input = strdup(input);
+    // cmd = strtok(input, " ");
+    // arg = strtok(NULL, "");
 
     // exit 0
     if (strncmp(cmd, "exit", strlen("exit")) == 0) {
       exit(0);
     } else if (strncmp(cmd, "echo", strlen("echo")) == 0) {
-      //   printf("%s\n", arg);
-      for (i = 0; i < nr; i++)
-        printf("%s%s", tmpp[i], (i < (nr - 1)) ? " " : "");
-      printf("\n");
+    //   printf("%s\n", arg);
+        for(i = 0; i < nr; i++)
+            printf("%s%s", tmpp[i], (i < (nr - 1)) ? " " : "");
+        printf("\n");
       continue;
     } else if (strncmp(input, "pwd", strlen("pwd")) == 0) {
       getcwd(buffer, 255);
@@ -130,7 +139,6 @@ int main() {
     } else if (strncmp(input, "cd", strlen("cd")) == 0) {
       char new_path[256];
       char *subdir;
-      arg = tmpp[0];
 
       if (strcmp(arg, "~") == 0) {
         char *home_dir = getenv("HOME");
@@ -168,7 +176,6 @@ int main() {
       }
       continue;
     } else if (strncmp(input, "type", strlen("type")) == 0) {
-      arg = tmpp[0];
       flag = 0;
 
       for (i = 0; i < num_my_shell_builtins; i++) {
@@ -203,9 +210,8 @@ int main() {
       path_token = strtok(dup_path, ":");
       while (path_token) {
         sprintf(exec_path, "%s/%s", path_token, cmd);
-        // printf("PATH:%s\n", exec_path);
+
         if (access(exec_path, X_OK) == 0) {
-            // printf("PATH--:%s\n", exec_path);
           flag = 1;
           break;
         }
@@ -214,20 +220,24 @@ int main() {
 
       if (flag) {
 
-        int newone = 0;
-        char** newargs = malloc((nargs + 1) * sizeof(char *));
-        newargs[newone++] = strdup(cmd);
-        for(i = 0; i < nr; i++) {
-            newargs = realloc(newargs, (newone + 1) * sizeof(char *));
-            newargs[newone++] = strdup(tmpp[i]);
+        nargs = 0;
+        args = malloc((nargs + 1) * sizeof(char *));
+        args[nargs++] = strdup(cmd);
+
+        token = strtok(arg, " ");
+        while (token) {
+          args = realloc(args, (nargs + 1) * sizeof(char *));
+          args[nargs++] = strdup(token);
+          token = strtok(NULL, " ");
         }
-        newargs[newone++] = NULL;
+        args = realloc(args, (nargs + 1) * sizeof(char *));
+        args[nargs++] = NULL;
 
         pid = fork();
 
         if (pid == 0) {
           // child
-          execvp(cmd, newargs);
+          execvp(cmd, args);
         } else {
           // parent aka shell
           wait(NULL);
