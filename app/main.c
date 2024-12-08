@@ -48,41 +48,52 @@ int main() {
     } else if (strncmp(cmd, "echo", strlen("echo")) == 0) {
       printf("%s\n", arg);
       continue;
-    } 
-    else if (strncmp(input, "pwd", strlen("pwd")) == 0) {
+    } else if (strncmp(input, "pwd", strlen("pwd")) == 0) {
       getcwd(buffer, 255);
       printf("%s\n", buffer);
       continue;
-    }
-    else if (strncmp(input, "cd", strlen("cd")) == 0) {
-      getcwd(buffer, 255);
-      if(strncmp(arg, "../", strlen("../")) == 0) {
-        
-        char* last_slash = strrchr(buffer, "/");
-        if(last_slash) {
-          size_t length = last_slash - buffer;
-          char new_path[256];
-          strncpy(new_path, buffer, length);
-          new_path[length] = 0;
-          rc = chdir(new_path);
-          if(rc != 0)
-            printf("cd: %s: No such file or directory\n", new_path);
-        }
-      }
-      else if(strncmp(arg, "./", strlen("./")) == 0) {
-        char new_path[256];
-        sprintf(new_path, "%s/%s", buffer, arg+2);
-        rc = chdir(new_path);
-        if(rc != 0)
-          printf("cd: %s: No such file or directory\n", new_path);
+    } else if (strncmp(input, "cd", strlen("cd")) == 0) {
+      char new_path[256];
+      char* subdir;
 
+      if (strcmp(arg, ".") == 0) {
+        //
       }
-      rc = chdir(arg);
-      if(rc != 0)
-        printf("cd: %s: No such file or directory\n", arg);
+    //   if (strcmp(arg, "..") == 0) {
+    //     if (chdir("..") == -1) {
+    //       printf("cd: %s: No such file or directory\n", arg);
+    //     }
+    //     //
+    //   }
+      getcwd(buffer, 255);
+      snprintf(new_path, 256, "%s/%s", buffer, arg);
+
+      if (strncmp(arg, "../", strlen("../")) == 0) {
+        token = strtok(new_path, "/");
+        while (token != NULL) {
+          subdir = token;
+
+          // Handle ".." (go up one directory)
+          if (strcmp(subdir, "..") == 0) {
+            if (chdir("..") == -1) {
+                //
+            }
+          }
+          // Handle normal directory names
+          else if (strcmp(subdir, ".") != 0) {
+            if (chdir(subdir) == -1) {
+                //
+            }
+          }
+          token = strtok(NULL, "/");
+        }
+      } else {
+        rc = chdir(arg);
+        if (rc != 0)
+          printf("cd: %s: No such file or directory\n", arg);
+      }
       continue;
-    }
-    else if (strncmp(input, "type", strlen("type")) == 0) {
+    } else if (strncmp(input, "type", strlen("type")) == 0) {
       flag = 0;
 
       for (i = 0; i < num_my_shell_builtins; i++) {
