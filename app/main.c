@@ -23,7 +23,7 @@ int main() {
 
   path =  getenv("PATH");
 
-  //REPL Loop
+  //REPL Read Evaluate Print Loop
   while(1) {
     printf("$ ");
     fflush(stdout);
@@ -32,12 +32,14 @@ int main() {
     char input[100];
     fgets(input, 100, stdin);
 
-    //TODO: remove newline at end
-    input[strlen(input) - 1] = '\0';
+    //remove newline at end
+    //input[strlen(input) - 1] = '\0';
+    input[strcspn(input, "\n")] = 0;
 
     //duplicate string
     dup_input = strdup(input);
     cmd = strtok(dup_input, " ");
+    arg = strtok(NULL, "");
 
     //exit 0
     if(strncmp(input, "exit 0",strlen("exit 0")) == 0) {
@@ -50,7 +52,7 @@ int main() {
     else if(strncmp(input, "type",strlen("type")) == 0) {
       flag = 0;
 
-      arg = strtok(NULL, " ");
+      //arg = strtok(NULL, " ");
       for(i = 0; i < num_my_shell_builtins; i++) {
         if(strncmp(arg, my_shell_builtins[i], strlen(my_shell_builtins[i])) == 0) {
           printf("%s is a shell builtin\n", arg);
@@ -78,43 +80,80 @@ int main() {
     }
     else {
       flag = 0;
-      nargs = 0;
-
-      while(cmd) {
-        args = realloc(args, ++nargs * sizeof(char*));
-        args[nargs - 1] = malloc(strlen(cmd) + 1);
-        strcpy(args[nargs - 1], cmd);
-        //printf("%s ---- \n", args[nargs - 1]);
-        cmd = strtok(NULL, " ");
-      }
-      args[nargs] = NULL;
+      int cmd_fnd = 0;
 
       dup_path = strdup(path);
       path_token = strtok(dup_path, ":");
       while(path_token) {
-        sprintf(exec_path, "%s/%s", path_token, args[0]);
-        //printf("exec_path=%s\n", exec_path);
+        sprintf(exec_path, "%s/%s", path_token, cmd);
+        
         if(access(exec_path, X_OK) == 0) {
-          
+          cmd_fnd = 1;
+          //printf("%s is %s\n", arg, exec_path);
+          break;
+        }
+        path_token = strtok(NULL, ":");
+      }
+
+      // while(cmd) {
+      //   args = realloc(args, ++nargs * sizeof(char*));
+      //   args[nargs - 1] = malloc(strlen(cmd) + 1);
+      //   strcpy(args[nargs - 1], cmd);
+      //   //printf("%s ---- \n", args[nargs - 1]);
+      //   cmd = strtok(NULL, " ");
+      // }
+      // args[nargs] = NULL;
+
+      // dup_path = strdup(path);
+      // path_token = strtok(dup_path, ":");
+      //while(path_token) {
+        // sprintf(exec_path, "%s/%s", path_token, args[0]);
+        // printf("exec_path=%s\n", exec_path);
+        // if(access(exec_path, X_OK) == 0) {
+
+
+
+        if(cmd_fnd){
+
+          char* jk[3];
+          int x=0;
+          jk[x++] = strdup(cmd);
+          jk[x++] = strdup(arg);
+          jk[x++] = NULL;
+          // printf("H->%s\n", jk[x-1]);
+          // char* arg_tk = strtok(arg, " ");
+          // while(arg_tk) {
+          //   jk[x++] = strdup(arg_tk);
+          //   arg_tk = strtok(NULL, " ");
+          //   printf("H->%s\n", jk[x-1]);
+          // }
+
+
+
           pid = fork();
+
+           
 
           if(pid == 0) {
             //child  
-            execv(exec_path, args);
+            execvp(cmd, jk);
           }
           else {
             //parent aka shell
             wait(NULL);
             flag = 1;
+            //printf("\n");
             //free(args);
           }
 
-          break;
+          //break;
+        //}
+       // path_token = strtok(NULL, ":");
+      //}
+
         }
-        path_token = strtok(NULL, ":");
-      }
-      if(!flag)
-        printf("%s: command not found\n", args[0]);
+      if(!cmd_fnd)
+        printf("%s: command not found\n", cmd);
     }
   }
 
