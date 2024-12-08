@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pwd.h>
 
 const int num_my_shell_builtins = 5;
 char my_shell_builtins[5][10] = {"exit", "echo", "type", "pwd", "chdir"};
@@ -56,8 +57,11 @@ int main() {
       char new_path[256];
       char* subdir;
 
-      if (strcmp(arg, ".") == 0) {
-        //
+      if (strcmp(arg, "~") == 0) {
+        char* home_dir = getenv("HOME");
+        if (chdir(home_dir) == 0) {
+            continue;
+        }
       }
     //   if (strcmp(arg, "..") == 0) {
     //     if (chdir("..") == -1) {
