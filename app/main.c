@@ -4,8 +4,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-const int num_my_shell_builtins = 3;
-char my_shell_builtins[3][10] = {"exit", "echo", "type"};
+const int num_my_shell_builtins = 4;
+char my_shell_builtins[4][10] = {"exit", "echo", "type", "pwd"};
 
 int main() {
   char *cmd = NULL;
@@ -16,6 +16,7 @@ int main() {
   int i;
   int flag;
   char exec_path[256];
+  char buffer[256];
   pid_t pid;
   char **args;
   int nargs = 0;
@@ -47,7 +48,13 @@ int main() {
     } else if (strncmp(cmd, "echo", strlen("echo")) == 0) {
       printf("%s\n", arg);
       continue;
-    } else if (strncmp(input, "type", strlen("type")) == 0) {
+    } 
+    else if (strncmp(input, "pwd", strlen("pwd")) == 0) {
+      getcwd(buffer, 255);
+      printf("%s\n", buffer);
+      continue;
+    }
+    else if (strncmp(input, "type", strlen("type")) == 0) {
       flag = 0;
 
       for (i = 0; i < num_my_shell_builtins; i++) {
