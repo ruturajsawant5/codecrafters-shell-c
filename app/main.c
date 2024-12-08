@@ -4,8 +4,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-const int num_my_shell_builtins = 4;
-char my_shell_builtins[4][10] = {"exit", "echo", "type", "pwd"};
+const int num_my_shell_builtins = 5;
+char my_shell_builtins[5][10] = {"exit", "echo", "type", "pwd", "chdir"};
 
 int main() {
   char *cmd = NULL;
@@ -21,7 +21,7 @@ int main() {
   char **args;
   int nargs = 0;
   char *token;
-
+  int rc;
   path = getenv("PATH");
 
   // REPL Read Evaluate Print Loop
@@ -52,6 +52,12 @@ int main() {
     else if (strncmp(input, "pwd", strlen("pwd")) == 0) {
       getcwd(buffer, 255);
       printf("%s\n", buffer);
+      continue;
+    }
+    else if (strncmp(input, "cd", strlen("cd")) == 0) {
+      rc = chdir(arg);
+      if(rc != 0)
+        printf("cd: %s: No such file or directory\n", arg);
       continue;
     }
     else if (strncmp(input, "type", strlen("type")) == 0) {
