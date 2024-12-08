@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 const int num_my_shell_builtins = 3;
 char my_shell_builtins[3][10] = {"exit", "echo", "type"};
@@ -16,6 +17,9 @@ int main() {
   int i;
   int flag;
   char exec_path[256];
+  pid_t pid;
+  char** args;
+  int nargs = 0;
 
   path =  getenv("PATH");
 
@@ -72,10 +76,46 @@ int main() {
         printf("%s: not found\n", arg);
       continue;
     }
+    else {
+      flag = 0;
+      nargs = 0;
 
-    
+      while(cmd) {
+        args = realloc(args, ++nargs * sizeof(char*));
+        args[nargs - 1] = malloc(strlen(cmd) + 1);
+        strcpy(args[nargs - 1], cmd);
+        //printf("%s ---- \n", args[nargs - 1]);
+        cmd = strtok(NULL, " ");
+      }
+      args[nargs] = NULL;
 
-    printf("%s: command not found\n", cmd);
+      dup_path = strdup(path);
+      path_token = strtok(dup_path, ":");
+      while(path_token) {
+        sprintf(exec_path, "%s/%s", path_token, args[0]);
+        //printf("exec_path=%s\n", exec_path);
+        if(access(exec_path, X_OK) == 0) {
+          
+          pid = fork();
+
+          if(pid == 0) {
+            //child  
+            execv(exec_path, args);
+          }
+          else {
+            //parent aka shell
+            wait(NULL);
+            flag = 1;
+            //free(args);
+          }
+
+          break;
+        }
+        path_token = strtok(NULL, ":");
+      }
+      if(!flag)
+        printf("%s: command not found\n", args[0]);
+    }
   }
 
   return 0;
